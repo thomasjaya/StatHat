@@ -20,3 +20,5 @@ note - all stats come from slothpixel not directly from the hypixel API so any d
 - /stathat personal - toggles stathat over your own head​
 
 ![image](https://user-images.githubusercontent.com/92794991/138004035-becbf055-8743-4abf-83c0-63a4897ffb60.png)
+
+(hypixel forums thread here: https://hypixel.net/threads/stathat-duels-stats-mod-release.4402822/)
