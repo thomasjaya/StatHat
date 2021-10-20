@@ -1,7 +1,8 @@
-package apitools;
+package stathat;
 
-import apitools.dictionaries.duelsTitles;
-import apitools.util.renderUtil;
+import stathat.dictionaries.duelsTitles;
+import stathat.objects.UserSettings;
+import stathat.util.renderUtil;
 import com.google.gson.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -9,8 +10,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -50,7 +49,7 @@ class getPlayerData implements Runnable { // stage 3
             return;
         }
 
-        getPlayerLabels.threadEnded(playerJson, e);
+        playerLabels.threadEnded(playerJson, e);
 
     }
 
@@ -67,22 +66,14 @@ class getPlayerData implements Runnable { // stage 3
 }
 
 
-public class getPlayerLabels
+public class playerLabels
 {
-    public static long lastLocrawTime = 0; // the time /locraw was last executed
+    private long lastLocrawTime = 0; // the time /locraw was last executed
+    private boolean shouldRender = true; // e.g if player is blind set false
 
-    public static Map<Entity, String[]> playerLabelList = new HashMap<>();
+    private static Map<Entity, String[]> playerLabelList = new HashMap<>();
 
-
-    public static boolean shouldRender = true;
-
-    public static boolean toggled = true;
-
-    public static float height = 0f;
-
-    public static boolean shadow = true;
-
-    public static boolean personal = false;
+    UserSettings settings = generateConfig.settings;
 
 
     @SubscribeEvent
@@ -132,7 +123,7 @@ public class getPlayerLabels
             return;
         }
 
-        if(!toggled){
+        if(!settings.isToggled()){
             return;
         }
 
@@ -305,7 +296,7 @@ public class getPlayerLabels
             return;
         }
 
-        if(!toggled){
+        if(!settings.isToggled()){
             return;
         }
 
@@ -334,7 +325,7 @@ public class getPlayerLabels
             }
 
             EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
-            if(!personal && e == thePlayer){
+            if(!settings.isPersonal() && e == thePlayer){
                 continue;
             }
 
@@ -346,13 +337,13 @@ public class getPlayerLabels
 
 
             if(lines[0] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + height, 0, getTitleColor(lines[0]), shadow);
+                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + settings.getHeight(), 0, getTitleColor(lines[0]), settings.isShadow());
             }
             if(lines[1] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + height, 0, getTitleColor(lines[1]), shadow);
+                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + settings.getHeight(), 0, getTitleColor(lines[1]), settings.isShadow());
             }
             if(lines[2] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + height, 0, getTitleColor(lines[2]), shadow);
+                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + settings.getHeight(), 0, getTitleColor(lines[2]), settings.isShadow());
             }
 
         }

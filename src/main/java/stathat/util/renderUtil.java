@@ -1,4 +1,4 @@
-package apitools.util;
+package stathat.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;

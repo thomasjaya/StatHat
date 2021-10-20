@@ -1,8 +1,11 @@
-package apitools.commands;
+package stathat.commands;
 
-import apitools.getPlayerLabels;
-import apitools.objects.ConfigElement;
-import apitools.util.fileUtil;
+import stathat.objects.UserSettings;
+import stathat.playerLabels;
+import stathat.objects.ConfigElement;
+import stathat.util.fileUtil;
+import stathat.generateConfig;
+
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
@@ -40,6 +43,8 @@ public class stathat extends CommandBase implements ICommand {
         File settings_file = new File(fileUtil.getRootDir(), "settings.json"); // reference to settings.json
         Type config_element_arrayList_type = new TypeToken<ArrayList<ConfigElement>>(){}.getType();
 
+        UserSettings settings = generateConfig.settings;
+
         if (s instanceof EntityPlayer) {
             if(string.length == 0){
                 return;
@@ -55,12 +60,12 @@ public class stathat extends CommandBase implements ICommand {
             }
 
             if(parameter1.equalsIgnoreCase("toggle")){ // toggling on/off stathat
-                getPlayerLabels.toggled = !getPlayerLabels.toggled; //changes toggled setting in getPlayerLabels. TODO: create dedicated class for imported options rather then storing in getPlayerLabels
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You just set StatHat's state to " + getPlayerLabels.toggled + "!")); // tells user the state they set stathat to
+                settings.setToggled(!settings.isToggled()); // toggles toggled setting
+                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You just set StatHat's state to " + settings.isToggled() + "!")); // tells user the state they set stathat to
 
                 ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type); // reads settings.json into an ArrayList of ConfigElement objects
 
-                readSettings.get(2).setBool_(getPlayerLabels.toggled); // the toggled setting is at element 2 of the ArrayList of ConfigElement objects (see prepareConfig for structure of settings array / settings file)
+                readSettings.get(2).setBool_(settings.isToggled()); // the toggled setting is at element 2 of the ArrayList of ConfigElement objects (see prepareConfig for structure of settings array / settings file)
                 fileUtil.writeJsonToFile(settings_file, readSettings); // write updated settings to settings.json
             }
 
@@ -68,11 +73,11 @@ public class stathat extends CommandBase implements ICommand {
             if(parameter1.equalsIgnoreCase("move")){ // moving stathat up/down
                 if(string[1] != null){
                     if(string[1].equalsIgnoreCase("up")){
-                        getPlayerLabels.height += 0.1f;
+                        settings.setHeight(settings.getHeight() + 0.1f);
                         Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You moved StatHat up!"));
                     }
                     else if(string[1].equalsIgnoreCase("down")){
-                        getPlayerLabels.height -= 0.1f;
+                        settings.setHeight(settings.getHeight() - 0.1f);
                         Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You moved StatHat down!"));
                     }
                     else{
@@ -84,28 +89,28 @@ public class stathat extends CommandBase implements ICommand {
 
                 ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
 
-                readSettings.get(0).setFloat_(getPlayerLabels.height); // the move setting is at element 0 of the settings file (see prepareConfig)
+                readSettings.get(0).setFloat_(settings.getHeight()); // the move setting is at element 0 of the settings file (see prepareConfig)
                 fileUtil.writeJsonToFile(settings_file, readSettings);
             }
 
             if(parameter1.equalsIgnoreCase("shadow")){
-                getPlayerLabels.shadow = !getPlayerLabels.shadow;
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the shadow setting to " + getPlayerLabels.shadow));
+                settings.setShadow(!settings.isShadow());
+                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the shadow setting to " + settings.isToggled()));
 
                 ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
 
-                readSettings.get(1).setBool_(getPlayerLabels.shadow);
+                readSettings.get(1).setBool_(settings.isShadow());
                 fileUtil.writeJsonToFile(settings_file, readSettings);
 
             }
 
             if(parameter1.equalsIgnoreCase("personal")){
-                getPlayerLabels.personal = !getPlayerLabels.personal;
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the personal setting to " + getPlayerLabels.personal));
+                settings.setPersonal(!settings.isPersonal());
+                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the personal setting to " + settings.isPersonal()));
 
                 ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
 
-                readSettings.get(3).setBool_(getPlayerLabels.personal);
+                readSettings.get(3).setBool_(settings.isPersonal());
                 fileUtil.writeJsonToFile(settings_file, readSettings);
 
             }

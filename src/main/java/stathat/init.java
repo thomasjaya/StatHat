@@ -1,7 +1,7 @@
-package apitools;
+package stathat;
 
-import apitools.commands.*;
-import apitools.util.fileUtil;
+import stathat.commands.*;
+import stathat.util.fileUtil;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -17,7 +17,7 @@ public class init {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
-        MinecraftForge.EVENT_BUS.register(new getPlayerLabels()); // register Minecraft event bus for getPlayerLabels
+        MinecraftForge.EVENT_BUS.register(new playerLabels()); // register Minecraft event bus for getPlayerLabels
 
         ClientCommandHandler.instance.registerCommand(new stathat()); // create command 'stathat'
     }
@@ -30,7 +30,8 @@ public class init {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) throws IOException { // run init methods in other classes
         fileUtil.init();
-        prepareConfig.init();
+
+        generateConfig.init();
 
     }
 

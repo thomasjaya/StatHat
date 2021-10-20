@@ -1,7 +1,8 @@
-package apitools;
+package stathat;
 
-import apitools.objects.ConfigElement;
-import apitools.util.fileUtil;
+import stathat.objects.ConfigElement;
+import stathat.objects.UserSettings;
+import stathat.util.fileUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
@@ -11,14 +12,15 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class prepareConfig {
+public class generateConfig {
     /*
     Builds a config file on init, reading from existing file and adding any new settings.
      */
-
-    private static File settingsFile = new File(fileUtil.getRootDir(), "settings.json");
+    public static UserSettings settings = new UserSettings();
 
     public static void init() throws IOException {
+
+        File settingsFile = new File(fileUtil.getRootDir(), "settings.json");
 
         if(!settingsFile.exists()) {
             settingsFile.createNewFile();
@@ -34,17 +36,17 @@ public class prepareConfig {
         ArrayList<ConfigElement> writeSettings = new ArrayList<>(); // if readSettings has a gap e.g toggled, then this will make a list of what's going to be written
 
 
-        if(!readSettingsString.contains("position")){ // Position 0 in settings file/arraylist
+        if(!readSettingsString.contains("position")){ // position at element 0 of settings ArrayList / settings file
             ConfigElement position = new ConfigElement();
             position.setName("position");
-            position.setFloat_(0.0f);
+            position.setFloat_(0.5f);
 
             writeSettings.add(position);
         } else {
             writeSettings.add(readSettings.get(0));
         }
 
-        if(!readSettingsString.contains("shadow")){
+        if(!readSettingsString.contains("shadow")){ // shadow at element 1
             ConfigElement shadow = new ConfigElement();
             shadow.setName("shadow");
             shadow.setBool_(false);
@@ -54,7 +56,7 @@ public class prepareConfig {
             writeSettings.add(readSettings.get(1));
         }
 
-        if(!readSettingsString.contains("toggled")){
+        if(!readSettingsString.contains("toggled")){ // toggled at element 2
             ConfigElement toggled = new ConfigElement();
             toggled.setName("toggled");
             toggled.setBool_(true);
@@ -64,7 +66,7 @@ public class prepareConfig {
             writeSettings.add(readSettings.get(2));
         }
 
-        if(!readSettingsString.contains("personal")){
+        if(!readSettingsString.contains("personal")){ // personal at element 3
             ConfigElement personal = new ConfigElement();
             personal.setName("personal");
             personal.setBool_(false);
@@ -76,10 +78,10 @@ public class prepareConfig {
 
         fileUtil.writeJsonToFile(settingsFile, writeSettings);
 
+        settings.setHeight(writeSettings.get(0).getFloat_());
+        settings.setShadow(writeSettings.get(1).getBool_());
+        settings.setToggled(writeSettings.get(2).getBool_());
+        settings.setPersonal(writeSettings.get(3).getBool_());
 
-        getPlayerLabels.height = writeSettings.get(0).getFloat_();
-        getPlayerLabels.shadow = writeSettings.get(1).getBool_();
-        getPlayerLabels.toggled = writeSettings.get(2).getBool_();
-        getPlayerLabels.personal = writeSettings.get(3).getBool_();
     }
 }

@@ -1,4 +1,4 @@
-package apitools.objects;
+package stathat.objects;
 
 public class ConfigElement {
     /*

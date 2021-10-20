@@ -1,4 +1,4 @@
-package apitools.dictionaries;
+package stathat.dictionaries;
 
 import java.util.HashMap;
 import java.util.Map;
