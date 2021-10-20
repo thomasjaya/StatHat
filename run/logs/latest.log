@@ -1,22 +1,47 @@
-[17:26:01] [Client thread/INFO]: Setting user: Al_and_Tom
-[17:26:04] [Client thread/INFO]: LWJGL Version: 2.9.4
-[17:26:12] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:StatHat
-[17:26:12] [Sound Library Loader/INFO]: Starting up SoundSystem...
-[17:26:13] [Thread-9/INFO]: Initializing LWJGL OpenAL
-[17:26:13] [Thread-9/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
-[17:26:13] [Thread-9/INFO]: OpenAL initialized.
-[17:26:13] [Sound Library Loader/INFO]: Sound engine started
-[17:26:19] [Client thread/INFO]: Created: 16x16 textures-atlas
-[17:26:20] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:StatHat
-[17:26:20] [Client thread/INFO]: SoundSystem shutting down...
-[17:26:20] [Client thread/WARN]: Author: Paul Lamb, www.paulscode.com
-[17:26:20] [Sound Library Loader/INFO]: Starting up SoundSystem...
-[17:26:20] [Thread-11/INFO]: Initializing LWJGL OpenAL
-[17:26:20] [Thread-11/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
-[17:26:20] [Thread-11/INFO]: OpenAL initialized.
-[17:26:21] [Sound Library Loader/INFO]: Sound engine started
-[17:26:26] [Client thread/INFO]: Created: 512x512 textures-atlas
-[17:26:30] [Client thread/INFO]: Connecting to 2187ge7821geu12he.ddns.net., 25565
-[17:26:44] [Client thread/INFO]: Stopping!
-[17:26:44] [Client thread/INFO]: SoundSystem shutting down...
-[17:26:44] [Client thread/WARN]: Author: Paul Lamb, www.paulscode.com
+[23:02:46] [Client thread/INFO]: Setting user: Al_and_Tom
+[23:02:49] [Client thread/INFO]: LWJGL Version: 2.9.4
+[23:02:56] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:StatHat
+[23:02:56] [Sound Library Loader/INFO]: Starting up SoundSystem...
+[23:02:57] [Thread-9/INFO]: Initializing LWJGL OpenAL
+[23:02:57] [Thread-9/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
+[23:02:57] [Thread-9/INFO]: OpenAL initialized.
+[23:02:57] [Sound Library Loader/INFO]: Sound engine started
+[23:03:03] [Client thread/INFO]: Created: 16x16 textures-atlas
+[23:03:04] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:StatHat
+[23:03:04] [Client thread/INFO]: SoundSystem shutting down...
+[23:03:04] [Client thread/WARN]: Author: Paul Lamb, www.paulscode.com
+[23:03:04] [Sound Library Loader/INFO]: Starting up SoundSystem...
+[23:03:04] [Thread-11/INFO]: Initializing LWJGL OpenAL
+[23:03:04] [Thread-11/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
+[23:03:04] [Thread-11/INFO]: OpenAL initialized.
+[23:03:05] [Sound Library Loader/INFO]: Sound engine started
+[23:03:10] [Client thread/INFO]: Created: 512x512 textures-atlas
+[23:03:44] [Client thread/INFO]: Connecting to 2187ge7821geu12he.ddns.net., 25565
+[23:03:49] [Client thread/INFO]: [CHAT] stathat toggle - toggles stathat on and off
+[23:03:49] [Client thread/INFO]: [CHAT] stathat move [up/down] - moves stathat up/down
+[23:03:49] [Client thread/INFO]: [CHAT] stathat shadow - toggles text shadow
+[23:03:49] [Client thread/INFO]: [CHAT] stathat personal - toggles StatHat above yourself
+[23:03:49] [Client thread/INFO]: [CHAT] stathat gamemode §5[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:03:56] [Client thread/INFO]: [CHAT] x isn't a valid gamemode. Please choose one of: §5[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:05:09] [Client thread/INFO]: Connecting to 2187ge7821geu12he.ddns.net., 25565
+[23:05:12] [Client thread/INFO]: [CHAT] Você precisa estar autenticado para utilizar o chat.
+[23:05:14] [Client thread/INFO]: [CHAT] stathat toggle - toggles stathat on and off
+[23:05:14] [Client thread/INFO]: [CHAT] stathat move [up/down] - moves stathat up/down
+[23:05:14] [Client thread/INFO]: [CHAT] stathat shadow - toggles text shadow
+[23:05:14] [Client thread/INFO]: [CHAT] stathat personal - toggles StatHat above yourself
+[23:05:14] [Client thread/INFO]: [CHAT] stathat gamemode §5[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:05:26] [Client thread/INFO]: [CHAT] stathat toggle - toggles stathat on and off
+[23:05:26] [Client thread/INFO]: [CHAT] stathat move [up/down] - moves stathat up/down
+[23:05:26] [Client thread/INFO]: [CHAT] stathat shadow - toggles text shadow
+[23:05:26] [Client thread/INFO]: [CHAT] stathat personal - toggles StatHat above yourself
+[23:05:26] [Client thread/INFO]: [CHAT] stathat gamemode §d[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:05:27] [Client thread/INFO]: [CHAT] stathat toggle - toggles stathat on and off
+[23:05:27] [Client thread/INFO]: [CHAT] stathat move [up/down] - moves stathat up/down
+[23:05:27] [Client thread/INFO]: [CHAT] stathat shadow - toggles text shadow
+[23:05:27] [Client thread/INFO]: [CHAT] stathat personal - toggles StatHat above yourself
+[23:05:27] [Client thread/INFO]: [CHAT] stathat gamemode §d[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:05:31] [Client thread/INFO]: [CHAT] x isn't a valid gamemode. Please choose one of:
+[23:05:31] [Client thread/INFO]: [CHAT] §d[bridge, classic_duel, sumo, skywars, combo_duel, op_duels, potion_duel, blitz_duel, overall]
+[23:05:45] [Client thread/INFO]: Stopping!
+[23:05:45] [Client thread/INFO]: SoundSystem shutting down...
+[23:05:45] [Client thread/WARN]: Author: Paul Lamb, www.paulscode.com

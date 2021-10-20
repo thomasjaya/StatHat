@@ -6,12 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class DuelsTitles {
+public class titles {
 
     /*
     Hashmap containing titles and associated number of wins
      */
-
     public static TreeMap<Integer, String> titles = new TreeMap<Integer, String>() {{
         put(50, "Rookie");
         put(60, "Rookie II");
@@ -59,6 +58,18 @@ public class DuelsTitles {
         put(26000, "Godlike IX");
         put(28000, "Godlike X");
     }};
+
+    public static String[] gamemodes = { // list of accepted gamemodes that stathat can display
+            "bridge",
+            "classic_duel",
+            "sumo",
+            "skywars",
+            "combo_duel",
+            "op_duels",
+            "potion_duel",
+            "blitz_duel",
+            "overall"
+    };
 
     public static Color getTitleColor(String title){ // returning duels title colours from title name
         Color color = new Color(255, 255, 255);

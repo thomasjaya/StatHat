@@ -1,7 +1,9 @@
 package stathat;
 
-import stathat.dictionaries.DuelsTitles;
+import stathat.dictionaries.titles;
 import stathat.objects.UserSettings;
+import stathat.util.APIUtil;
+import stathat.util.requestUtil;
 import stathat.util.renderUtil;
 import com.google.gson.*;
 import net.minecraft.client.Minecraft;
@@ -16,54 +18,9 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import java.awt.*;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
-
-
-
-class getPlayerData implements Runnable { // stage 3
-    /*
-    Class which fetches players stats through the hypixel API in a seperate thread
-     */
-
-    String ign;
-    Entity e;
-
-    JsonObject playerJson;
-
-    public getPlayerData(Entity e) {
-        this.ign = e.getName();
-        this.e = e;
-    }
-
-
-    @Override
-    public void run() {
-        try{
-            playerJson = getJsonObject("https://api.slothpixel.me/api/players/" + ign);
-        } catch (IOException e) {
-            return;
-        }
-
-        playerLabels.threadEnded(playerJson, e);
-
-    }
-
-    public JsonObject getJsonObject (String URLString) throws IOException {
-        Gson gson = new Gson();
-        URL url = new URL(URLString);
-        InputStreamReader reader = new InputStreamReader(url.openStream());
-
-        JsonObject json = gson.fromJson(reader, JsonObject.class);
-
-        return json;
-    }
-
-}
 
 
 public class playerLabels
@@ -71,7 +28,8 @@ public class playerLabels
     private long lastLocrawTime = 0; // the time /locraw was last executed
     private boolean shouldRender = true; // e.g if player is blind set false
 
-    private static Map<Entity, String[]> playerLabelList = new HashMap<>();
+    //private static Map<Entity, String[]> playerLabelList = new HashMap<>();
+    private static Map<Entity, JsonObject> playerLabelList = new HashMap<>();
 
     UserSettings settings = generateConfig.settings;
 
@@ -116,6 +74,7 @@ public class playerLabels
         playerLabelList.clear();
     }
 
+
     @SubscribeEvent // stage 1
     public void onEntityJoinWorld(EntityJoinWorldEvent event){
 
@@ -135,7 +94,6 @@ public class playerLabels
             return;
         }
 
-
         if(playerLabelList.containsKey(event.entity)){
             return;
         }
@@ -154,59 +112,33 @@ public class playerLabels
 
                     lastLocrawTime = System.currentTimeMillis();
                 }
-
             }
         }
 
         getPlayerData(event.entity); // run getPlayerData class with entity which just joined the world
     }
 
+
     private void getPlayerData(Entity e) { // stage 2
-        /* method which adds to playerList for a given entity through the runnable in seperate thread so doesn't lag the player */
-        getPlayerData playerdata = new getPlayerData(e);
-        Thread thread = new Thread(playerdata);
-        thread.start();
-    }
-
-    public static void threadEnded(JsonObject playerJson, Entity e) { // stage 4
         /*
-        Method called from runnable, which adds target entity and stats formatted into a string array into a hashmap
-         */
-        JsonObject statsObject = playerJson.getAsJsonObject("stats");
+        - Runnable which fetches players stats through the hypixel API in a seperate thread
+        - Then appends entity and string array containing above head stats to hashmap
+        */
+        new Thread(() -> {
+            try {
+                requestUtil requests = new requestUtil();
+                JsonObject playerJson = requests.getJsonObject("https://api.slothpixel.me/api/players/" + e.getName()); // get JsonObject containing all data on player from slothpixel
 
-        String bestTitle = getBestDuelsTitle(statsObject);
+                JsonObject statsObject = playerJson.getAsJsonObject("stats"); // get more specific stats JsonObject
 
-        Float winLoss = getDuelsWinLoss(statsObject);
-        String roundedWinLoss = round(winLoss, 2) + " W/L";
+                playerLabelList.put(e, statsObject); // appending target entity and string array to playerLabelList
 
-        String[] lines = new String[]{
-                bestTitle,
-                roundedWinLoss,
-                ""
-        };
-
-        playerLabelList.put(e, lines); // appending target entity and string array to playerLabelList
-    }
-
-
-    static Float getDuelsWinLoss(JsonObject stats){
-        /* Method for extracting duels win/loss from stats object*/
-        float winLoss = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("win_loss_ratio").getAsFloat();
-
-        return winLoss;
-    }
-
-
-    static String getBestDuelsTitle(JsonObject stats){
-        int totalWins = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("wins").getAsInt(); // a players total wins
-
-        for(int wins : DuelsTitles.titles.descendingKeySet()){
-            if(wins < Math.round(totalWins/2)){ // for overall title you need double the wins
-                return DuelsTitles.titles.get(wins);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
-        }
-        return "Rookie";
+        }).start();
     }
+
 
 
     @SubscribeEvent
@@ -236,7 +168,7 @@ public class playerLabels
                 continue;
             }
 
-            if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ //§k
+            if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ // §k is the obfuscation character
                 continue;
             }
 
@@ -253,23 +185,66 @@ public class playerLabels
                 continue;
             }
 
-            String[] lines = playerLabelList.get(e);
+            JsonObject statsObject = playerLabelList.get(e);
 
+            String gamemode = settings.getGamemode(); // which gamemode to show stats for e.g bridge or overall
+
+            String[] lines = {"", "", ""};
+
+            if(gamemode.equalsIgnoreCase("overall")) {
+                float duelsWL = APIUtil.getOverallWinLoss(statsObject);
+                String roundedDuelsWL = round(duelsWL, 2) + " W/L";
+
+                lines = new String[]{
+                        APIUtil.getBestOverallTitle(statsObject),
+                        roundedDuelsWL,
+                        ""
+                };
+            }
+            else if(gamemode.equalsIgnoreCase("bridge")){
+                float bridgeWL = APIUtil.getBridgeWinLoss(statsObject);
+                String roundedBridgeWL = round(bridgeWL, 2) + " W/L";
+
+                lines = new String[]{
+                        APIUtil.getBestBridgeTitle(statsObject),
+                        roundedBridgeWL,
+                        ""
+                };
+            } else if(gamemode.equalsIgnoreCase("skywars")){
+                float skywarsWL = APIUtil.getSkywarsWinLoss(statsObject);
+                String roundedSkywarsWL = round(skywarsWL, 2) + " W/L";
+
+                lines = new String[]{
+                        APIUtil.getBestSkywarsTitle(statsObject),
+                        roundedSkywarsWL,
+                        ""
+                };
+            } else { // none of above edge cases so can use general methods
+                float duelsWL = APIUtil.getSpecificWinLoss(statsObject, gamemode);
+                String roundedDuelsWL = round(duelsWL, 2) + " W/L";
+
+                lines = new String[]{
+                        APIUtil.getBestSpecificTitle(statsObject, gamemode),
+                        roundedDuelsWL,
+                        ""
+                };
+
+            }
 
             if(lines[0] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[0]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + settings.getHeight(), 0, titles.getTitleColor(lines[0]), settings.isShadow());
             }
             if(lines[1] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[1]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + settings.getHeight(), 0, titles.getTitleColor(lines[1]), settings.isShadow());
             }
             if(lines[2] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[2]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + settings.getHeight(), 0, titles.getTitleColor(lines[2]), settings.isShadow());
             }
 
         }
 
-
     }
+
 
     private static double round (double value, int precision) {
         int scale = (int) Math.pow(10, precision);
@@ -278,5 +253,3 @@ public class playerLabels
 
 
 }
-
-

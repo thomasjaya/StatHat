@@ -76,12 +76,23 @@ public class generateConfig {
             writeSettings.add(readSettings.get(3));
         }
 
+        if(!readSettingsString.contains("gamemode")){ // gamemode at element 4
+            ConfigElement gamemode = new ConfigElement();
+            gamemode.setName("gamemode");
+            gamemode.setString_("overall"); // setting stats to be overall by default
+
+            writeSettings.add(gamemode);
+        } else {
+            writeSettings.add(readSettings.get(4));
+        }
+
         fileUtil.writeJsonToFile(settingsFile, writeSettings);
 
-        settings.setHeight(writeSettings.get(0).getFloat_());
+        settings.setHeight(writeSettings.get(0).getFloat_()); // assigning settings object all preferences read from file/generated
         settings.setShadow(writeSettings.get(1).getBool_());
         settings.setToggled(writeSettings.get(2).getBool_());
         settings.setPersonal(writeSettings.get(3).getBool_());
+        settings.setGamemode(writeSettings.get(4).getString_());
 
     }
 }

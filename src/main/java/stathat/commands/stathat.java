@@ -1,5 +1,6 @@
 package stathat.commands;
 
+import stathat.dictionaries.titles;
 import stathat.objects.UserSettings;
 import stathat.playerLabels;
 import stathat.objects.ConfigElement;
@@ -17,6 +18,8 @@ import net.minecraft.util.ChatComponentText;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class stathat extends CommandBase implements ICommand {
 
@@ -54,9 +57,10 @@ public class stathat extends CommandBase implements ICommand {
 
             if(parameter1.equalsIgnoreCase("help")){
                 Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat toggle - toggles stathat on and off"));
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat move up/down - moves stathat up/down"));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat move [up/down] - moves stathat up/down"));
                 Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat shadow - toggles text shadow"));
                 Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat personal - toggles StatHat above yourself"));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat gamemode " + "\u00A7" + "d" + Arrays.toString(titles.gamemodes)));
             }
 
             if(parameter1.equalsIgnoreCase("toggle")){ // toggling on/off stathat
@@ -113,6 +117,28 @@ public class stathat extends CommandBase implements ICommand {
                 readSettings.get(3).setBool_(settings.isPersonal());
                 fileUtil.writeJsonToFile(settings_file, readSettings);
 
+            }
+
+            if(parameter1.equalsIgnoreCase("gamemode")){
+                String parameter2 = string[1];
+                if(parameter2 != null){
+                    parameter2 = parameter2.toLowerCase(Locale.ROOT);
+                    if(Arrays.stream(titles.gamemodes).anyMatch(parameter2::equals)) { // parameter2 (e.g bridge) of gamemode type is one of the valid options
+
+                        settings.setGamemode(parameter2);
+                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the gamemode setting to " + settings.getGamemode()));
+
+                        ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
+
+                        readSettings.get(4).setString_(settings.getGamemode());
+                        fileUtil.writeJsonToFile(settings_file, readSettings);
+                    } else{
+                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(parameter2 + " isn't a valid gamemode. Please choose one of:")); // not on the list of valid gamemodes
+                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText( "\u00A7" + "d" + Arrays.toString(titles.gamemodes)));
+                    }
+                } else{
+                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Please input a gamemode you wish to change to"));
+                }
             }
 
         }

@@ -7,6 +7,7 @@ public class UserSettings {
     private float height;
     private boolean shadow;
     private boolean personal;
+    private String gamemode; // e.g bridge shows bridge stats
 
     public boolean isToggled() {
         return toggled;
@@ -40,5 +41,7 @@ public class UserSettings {
         this.personal = personal;
     }
 
+    public String getGamemode() { return gamemode; }
 
+    public void setGamemode(String gamemode) { this.gamemode = gamemode; }
 }
