@@ -1,6 +1,6 @@
 package stathat;
 
-import stathat.dictionaries.duelsTitles;
+import stathat.dictionaries.DuelsTitles;
 import stathat.objects.UserSettings;
 import stathat.util.renderUtil;
 import com.google.gson.*;
@@ -189,103 +189,23 @@ public class playerLabels
     }
 
 
-
     static Float getDuelsWinLoss(JsonObject stats){
         /* Method for extracting duels win/loss from stats object*/
-        float winLoss = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("win_loss_ratio").getAsFloat(); //
+        float winLoss = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("win_loss_ratio").getAsFloat();
 
         return winLoss;
     }
 
 
     static String getBestDuelsTitle(JsonObject stats){
-        /*
-        Method for determining best duels title from stats object
-        TODO: Use wins to work out specific duels titles rather then using highest which could be of any duels type
-        */
+        int totalWins = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("wins").getAsInt(); // a players total wins
 
-        JsonArray playersTitlesJson = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonArray("packages"); //
-
-        ArrayList<String> playersTitles = new ArrayList<>(); // ArrayList containing JsonArray
-        if (playersTitlesJson != null) { // converting the JsonArray to an ArrayList
-            int len = playersTitlesJson.size();
-            for (int i=0;i<len;i++){
-                playersTitles.add(playersTitlesJson.get(i).toString().replace("\"", "")); // remove unwanted " from start and end of list
-            }
-        } else {
-            return "Rookie";
-        }
-
-        String bestTitle = "rookie_all_modes"; // lowest title
-
-        for(String title : playersTitles){ // looping through the players titles, some are auras
-            String t = title.split("_")[0]; // e.g if master_uhc, we only get the master
-            String bestT = bestTitle.split("_")[0]; // e.g if rookie_uhc, we only get the rookie
-
-            if(!duelsTitles.titles.containsKey(t)){
-                continue;
-            }
-
-            if(duelsTitles.titles.get(t) > duelsTitles.titles.get(bestT)){ // if the kills from one is more than the other
-                bestTitle = title; // set bestTitle to untrimmed version containing gamemode aswell
+        for(int wins : DuelsTitles.titles.descendingKeySet()){
+            if(wins < Math.round(totalWins/2)){ // for overall title you need double the wins
+                return DuelsTitles.titles.get(wins);
             }
         }
-
-        if(bestTitle.contains("all")){ // for the case it is x all modes, it only returns legend
-            String[] bestTitleList = bestTitle.split("_");
-            String overallBestTitle = bestTitleList[0].substring(0,1).toUpperCase() + bestTitleList[0].substring(1).toLowerCase();
-            return overallBestTitle;
-        }
-
-        String[] bestTitleList = bestTitle.split("_");
-
-        String firsthalf = bestTitleList[0]; // e.g legend
-        String secondhalf = bestTitleList[1]; // e.g uhc
-
-        if(secondhalf.equalsIgnoreCase("tnt") || secondhalf.equalsIgnoreCase("uhc") || secondhalf.equalsIgnoreCase("op")){
-            secondhalf = secondhalf.toUpperCase(); // capitilizing all of UHC/TNT
-        } else {
-            secondhalf = secondhalf.substring(0,1).toUpperCase() + secondhalf.substring(1).toLowerCase(); // capitilising only first letter of e.g nodebuff
-        }
-
-        firsthalf = firsthalf.substring(0,1).toUpperCase() + firsthalf.substring(1).toLowerCase(); // capitilizing first letter of e.g legend -> Legend
-
-        String bestTitleTrimmed = secondhalf + " " + firsthalf; // so is e.g uhc legend not legend uhc
-
-        return bestTitleTrimmed;
-    }
-
-
-
-    static Color getTitleColor(String title){ // returning duels title colours from title name
-        Color color = new Color(255, 255, 255);
-
-        if(title.toLowerCase().contains("rookie")){
-            color = new Color(210,180,140);
-        }
-        if(title.toLowerCase().contains("iron")){
-            color = new Color(220,220,220);
-        }
-        if(title.toLowerCase().contains("gold")){
-            color = new Color(255,215,0);
-        }
-        if(title.toLowerCase().contains("diamond")){
-            color = new Color(0,204,204);
-        }
-        if(title.toLowerCase().contains("master")){
-            color = new Color(0,204,0);
-        }
-        if(title.toLowerCase().contains("legend")){
-            color = new Color(170,0,0,255);
-        }
-        if(title.toLowerCase().contains("grandmaster")){
-            color = new Color(255,255,85,255);
-        }
-        if(title.toLowerCase().contains("godlike")){
-            color = new Color(170,0,170,255); // (152,0,152,255)
-        }
-
-        return color;
+        return "Rookie";
     }
 
 
@@ -337,13 +257,13 @@ public class playerLabels
 
 
             if(lines[0] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + settings.getHeight(), 0, getTitleColor(lines[0]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[0], 0, 0.6 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[0]), settings.isShadow());
             }
             if(lines[1] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + settings.getHeight(), 0, getTitleColor(lines[1]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[1], 0, 0.8 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[1]), settings.isShadow());
             }
             if(lines[2] != ""){
-                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + settings.getHeight(), 0, getTitleColor(lines[2]), settings.isShadow());
+                renderUtil.renderLivingLabel(evt, e, lines[2], 0, 1 + settings.getHeight(), 0, DuelsTitles.getTitleColor(lines[2]), settings.isShadow());
             }
 
         }
