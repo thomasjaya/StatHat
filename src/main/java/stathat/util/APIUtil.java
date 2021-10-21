@@ -6,6 +6,8 @@ import stathat.dictionaries.titles;
 
 public class APIUtil {
 
+    /* Class containing methods which extract specific details from a slothpixel stats JsonObject e.g bridge win/loss */
+
     public static float getSpecificWinLoss(JsonObject stats, String title){
         JsonObject gameStats = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject(title); // gets x gamemode object
 
@@ -16,6 +18,7 @@ public class APIUtil {
         gameLosses += (gameLosses == 0) ? 1 : 0;
 
         float specificWL = (float)gameWins/gameLosses;
+
         return specificWL;
     }
 
@@ -129,7 +132,6 @@ public class APIUtil {
         }
         return "Skywars Rookie";
     }
-
 
 
     public static String toTitleCase(String givenString) {

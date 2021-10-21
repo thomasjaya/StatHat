@@ -26,7 +26,7 @@ import java.util.List;
 public class playerLabels
 {
     private long lastLocrawTime = 0; // the time /locraw was last executed
-    private boolean shouldRender = true; // e.g if player is blind set false
+    private boolean inDuels = true;
 
     //private static Map<Entity, String[]> playerLabelList = new HashMap<>();
     private static Map<Entity, JsonObject> playerLabelList = new HashMap<>();
@@ -38,7 +38,7 @@ public class playerLabels
     public void onChatReceived(ClientChatReceivedEvent event){
         /*
         - Method that determines whether player is in a duels lobby/duels game through output of /locraw
-        - If output of locraw has DUELS in it, shouldRender can be made true.
+        - If output of locraw has DUELS in it, inDuels can be made true.
          */
 
         if(Minecraft.getMinecraft().isSingleplayer()){
@@ -50,15 +50,15 @@ public class playerLabels
         if(Minecraft.getMinecraft().getCurrentServerData().serverIP.contains("hypixel")){ // if the sevrer is hypixel
             if(message.contains("\"server\"")){
                 if(message.contains("DUELS")){
-                    shouldRender = true;
+                    inDuels = true;
                 } else {
-                    shouldRender = false;
+                    inDuels = false;
                 }
                 event.setCanceled(true);
                 return;
             }
         } else{
-            shouldRender = true;
+            inDuels = true;
         }
 
 
@@ -139,49 +139,66 @@ public class playerLabels
         }).start();
     }
 
+    private boolean shouldRender(){ // should render all stathats?
+        if(Minecraft.getMinecraft().isSingleplayer()){
+            return false;
+        }
+
+        if(!settings.isToggled()){
+            return false;
+        }
+
+        if(!inDuels){
+            return false;
+        }
+
+        if(Minecraft.getMinecraft().thePlayer.isPotionActive(Potion.blindness)){
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean omitRender(EntityPlayer e){ // should skip on rendering x players stathat (e.g if they're invisible or shifted)
+        if(!playerLabelList.containsKey(e)){ // if the target isn't contained in the playerLabelList, then omit (return true)
+            return true;
+        }
+
+        if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ // §k is the obfuscation character
+            return true;
+        }
+
+        if(e.isSneaking()){
+            return true;
+        }
+
+        EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+        if(!settings.isPersonal() && e == thePlayer){
+            return true;
+        }
+
+        if(e.isPotionActive(Potion.invisibility)){
+            return true;
+        }
+
+        return false;
+    }
+
 
 
     @SubscribeEvent
     public void render(RenderWorldLastEvent evt) { //RenderWorldLastEvent RenderPlayerEvent
 
-        if(Minecraft.getMinecraft().isSingleplayer()){
+        if(!shouldRender()){
             return;
         }
 
-        if(!settings.isToggled()){
-            return;
-        }
-
-        if(!shouldRender){
-            return;
-        }
-
-        if(Minecraft.getMinecraft().thePlayer.isPotionActive(Potion.blindness)){
-            return;
-        }
 
         List<EntityPlayer> entityList = Minecraft.getMinecraft().theWorld.playerEntities;
 
         for(EntityPlayer e : entityList) {
 
-            if(!playerLabelList.containsKey(e)){
-                continue;
-            }
-
-            if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ // §k is the obfuscation character
-                continue;
-            }
-
-            if(e.isSneaking()){
-                continue;
-            }
-
-            EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
-            if(!settings.isPersonal() && e == thePlayer){
-                continue;
-            }
-
-            if(e.isPotionActive(Potion.invisibility)){
+            if(omitRender(e)){
                 continue;
             }
 
@@ -245,11 +262,11 @@ public class playerLabels
 
     }
 
-
     private static double round (double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
+
 
 
 }
