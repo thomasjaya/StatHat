@@ -4,10 +4,12 @@
 StatHat is a 1.8.9 forge mod for displaying hypixel duels stats above a player's head.
 
 # Features
-- The mod only renders when a player’s name is not obfuscated (random characters before a game starts)
-- It doesn’t render in any lobby or game other than duels, however will render always in other servers.
+- Displays a players best duels title as well as their win/loss.
+- The mod only renders when a player’s name is not obfuscated (random characters before a game starts) to prevent queue dodging.
+- It doesn’t render in any lobby or game other than duels, however will render always in other servers, also to prevent queue dodging.
+- Allows user to change certain preferences of the mod (see commands) and saves these settings to a JSON config file.
 
-note - all stats come from slothpixel not directly from the hypixel API so any downtime of the mod is likely linked to that. If any sort of downtime persists I will switch to the hypixel API which has the downside of requiring an api key.
+note - all stats come from slothpixel not directly from the hypixel API so any downtime of the mod is likely linked to that. If downtime persists I will switch to the hypixel API which has the downside of requiring an api key.
 
 # Commands
 (all settings saved to config file)
