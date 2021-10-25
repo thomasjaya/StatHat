@@ -30,9 +30,7 @@ public class init {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) throws IOException { // run init methods in other classes
         fileUtil.init();
-
         generateConfig.init();
-
     }
 
 

@@ -1,10 +1,7 @@
 package stathat.dictionaries;
 
 import java.awt.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class titles {
 
@@ -59,17 +56,19 @@ public class titles {
         put(28000, "Godlike X");
     }};
 
-    public static String[] gamemodes = { // list of accepted gamemodes that stathat can display
-            "bridge",
-            "classic_duel",
-            "sumo",
-            "skywars",
-            "combo_duel",
-            "op_duels",
-            "potion_duel",
-            "blitz_duel",
-            "overall"
-    };
+
+    public static LinkedHashMap<String, String> gamemodes = new LinkedHashMap<String, String>(){{  // list of accepted gamemodes that stathat can display (linkedhashmap so ordered in insertion order)
+        put("Bridge", "bridge"); // Key: Formatted user entered title, Value: unformatted locraw output
+        put("Classic", "classic_duel");
+        put("Sumo", "sumo");
+        put("Skywars", "sw");
+        put("Combo", "combo_duel");
+        put("OP", "op_duel");
+        put("Nodebuff", "potion_duel");
+        put( "Blitz", "blitz_duel");
+        put("Overall", "overall"); // overall best title and overall best W/L
+        put("Auto", "auto"); // automatically displays stats of game currently playing
+    }};
 
     public static Color getTitleColor(String title){ // returning duels title colours from title name
         Color color = new Color(255, 255, 255);

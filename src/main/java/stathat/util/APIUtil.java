@@ -9,13 +9,19 @@ public class APIUtil {
     /* Class containing methods which extract specific details from a slothpixel stats JsonObject e.g bridge win/loss */
 
     public static float getSpecificWinLoss(JsonObject stats, String title){
-        JsonObject gameStats = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject(title); // gets x gamemode object
+        /* Method for extracting win/loss from x duels gamemode */
 
-        int gameWins = (gameStats.getAsJsonPrimitive("wins") == null) ? 0 : gameStats.getAsJsonPrimitive("wins").getAsInt();
-        gameWins += (gameWins == 0) ? 1 : 0;
+        String unformattedTitle = titles.gamemodes.get(title); // gets the unformatted value from the formatted title key
 
-        int gameLosses = (gameStats.getAsJsonPrimitive("losses") == null) ? 0 : gameStats.getAsJsonPrimitive("losses").getAsInt();
-        gameLosses += (gameLosses == 0) ? 1 : 0;
+        if(unformattedTitle.equalsIgnoreCase("op_duel")){ // for some reason slothpixel makes the op section in the api be "op_duels" instead of "op_duel"
+            unformattedTitle = "op_duels";
+        }
+
+        JsonObject gameStats = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject(unformattedTitle); // gets x gamemode object
+
+        int gameWins = (gameStats.getAsJsonPrimitive("wins") == null) ? 1 : gameStats.getAsJsonPrimitive("wins").getAsInt();
+
+        int gameLosses = (gameStats.getAsJsonPrimitive("losses") == null) ? 1 : gameStats.getAsJsonPrimitive("losses").getAsInt();
 
         float specificWL = (float)gameWins/gameLosses;
 
@@ -31,7 +37,7 @@ public class APIUtil {
 
 
     public static float getBridgeWinLoss(JsonObject stats){
-        /* Method for extracting bridge duels win/loss*/
+        /* Method for extracting bridge duels win/loss */
 
         JsonObject bridgeJson = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject("bridge"); // gets bridge gamemode object
 
@@ -55,6 +61,8 @@ public class APIUtil {
     }
 
     public static float getSkywarsWinLoss(JsonObject stats){
+        /* Method for extracting Skywars duels win/loss */
+
         JsonObject skywarsJson = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject("skywars");
 
         int skywarsWins = 0;
@@ -72,8 +80,16 @@ public class APIUtil {
     }
 
 
-    public static String getBestSpecificTitle(JsonObject stats, String title){
-        JsonObject gameStats = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject(title); // gets x gamemode object
+    public static String getSpecificTitle(JsonObject stats, String title){
+        /* Method for extracting title from x duels gamemode */
+
+        String unformattedTitle = titles.gamemodes.get(title); // gets the unformatted value from the formatted title key
+
+        if(unformattedTitle.equalsIgnoreCase("op_duel")){ // for some reason slothpixel makes the op section in the api be "op_duels" instead of "op_duel"
+            unformattedTitle = "op_duels";
+        }
+
+        JsonObject gameStats = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject(unformattedTitle); // gets x gamemode object
 
         int gameWins = (gameStats.getAsJsonPrimitive("wins") == null) ? 0 : gameStats.getAsJsonPrimitive("wins").getAsInt();
 
@@ -88,7 +104,9 @@ public class APIUtil {
     }
 
 
-    public static String getBestOverallTitle(JsonObject stats){
+    public static String getOverallTitle(JsonObject stats){
+        /* Method for extracting overall title (e.g Legend II) */
+
         JsonPrimitive jsonWins = stats.getAsJsonObject("Duels").getAsJsonObject("general").getAsJsonPrimitive("wins");
 
         int totalWins = (jsonWins == null) ? 0 : jsonWins.getAsInt(); // a players total wins
@@ -101,7 +119,9 @@ public class APIUtil {
         return "Rookie";
     }
 
-    public static String getBestBridgeTitle(JsonObject stats){
+    public static String getBridgeTitle(JsonObject stats){
+        /* Method for extracting bridge title */
+
         JsonObject bridgeJson = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject("bridge"); // gets bridge gamemode object
 
         int bridgeWins = 0;
@@ -118,7 +138,7 @@ public class APIUtil {
         return "Bridge Rookie";
     }
 
-    public static String getBestSkywarsTitle(JsonObject stats){
+    public static String getSkywarsTitle(JsonObject stats){
         JsonObject skywarsJson = stats.getAsJsonObject("Duels").getAsJsonObject("gamemodes").getAsJsonObject("skywars");
 
         int skywarsWins = 0;

@@ -43,6 +43,11 @@ public class stathat extends CommandBase implements ICommand {
 
     @Override
     public void processCommand(ICommandSender s, String[] string) {
+        String orange =  "\u00A7" + "6";
+        String dark_red =  "\u00A7" + "4";
+        String white =  "\u00A7" + "f";
+
+
         File settings_file = new File(fileUtil.getRootDir(), "settings.json"); // reference to settings.json
         Type config_element_arrayList_type = new TypeToken<ArrayList<ConfigElement>>(){}.getType();
 
@@ -56,11 +61,22 @@ public class stathat extends CommandBase implements ICommand {
             String parameter1 = string[0]; // the first parameter after /stathat
 
             if(parameter1.equalsIgnoreCase("help")){
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat toggle - toggles stathat on and off"));
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat move [up/down] - moves stathat up/down"));
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat shadow - toggles text shadow"));
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat personal - toggles StatHat above yourself"));
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("stathat gamemode " + "\u00A7" + "d" + Arrays.toString(titles.gamemodes)));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(dark_red + "<============= StatHat Settings Start =============>"));
+
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(orange + "/stathat toggle" + white + " : toggles stathat" + " (currently: " + orange + settings.isToggled() + white +")"));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(orange + "/stathat move [up/down]" + white + " : moves stathat" + " (currently: "  + orange +  settings.getHeight() + white + ")"));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(orange + "/stathat shadow" + white + " : toggles text shadow" + " (currently: "  + orange +  settings.isShadow() + white + ")"));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(orange + "/stathat personal" + white + " : toggles StatHat above yourself" + " (currently: "  + orange +  settings.isPersonal() + white + ")"));
+
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(orange + "/stathat gamemode [gamemode]" + white + " : changes which gamemode stats are shown" + " (currently: "  + orange +  settings.getGamemode() + white + ")"));
+                for(String game : titles.gamemodes.keySet()){
+                    Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText( "> " + orange + game));
+                }
+
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(dark_red + "<============= StatHat Settings End =============>"));
+
+
+
             }
 
             if(parameter1.equalsIgnoreCase("toggle")){ // toggling on/off stathat
@@ -85,10 +101,10 @@ public class stathat extends CommandBase implements ICommand {
                         Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You moved StatHat down!"));
                     }
                     else{
-                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Please use /stathat move up or /stathat move down"));
+                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("\u00A7" + "4" + "Please use /stathat move up or /stathat move down"));
                     }
                 } else{
-                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Please use /stathat move up or /stathat move down"));
+                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("\u00A7" + "4" + "Please use /stathat move up or /stathat move down"));
                 }
 
                 ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
@@ -122,22 +138,27 @@ public class stathat extends CommandBase implements ICommand {
             if(parameter1.equalsIgnoreCase("gamemode")){
                 String parameter2 = string[1];
                 if(parameter2 != null){
-                    parameter2 = parameter2.toLowerCase(Locale.ROOT);
-                    if(Arrays.stream(titles.gamemodes).anyMatch(parameter2::equals)) { // parameter2 (e.g bridge) of gamemode type is one of the valid options
+                    parameter2 = toTitleCase(parameter2);
 
-                        settings.setGamemode(parameter2);
+                    if(parameter2.equalsIgnoreCase("Op")){ // title case will make user input of whatever to Op when in the settings it must be OP
+                        parameter2 = "OP";
+                    }
+
+                    if(Arrays.stream(titles.gamemodes.keySet().toArray()).anyMatch(parameter2::equals)) { // parameter2 (e.g bridge) of gamemode type is one of the valid options
+
+                        settings.setGamemode(parameter2); // set gamemode in settings to the chosen option
+
                         Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("You changed the gamemode setting to " + settings.getGamemode()));
 
-                        ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type);
+                        ArrayList<ConfigElement> readSettings = fileUtil.readFromJsonByType(settings_file, config_element_arrayList_type); // read settings into a ConfigElement ArrayList
 
-                        readSettings.get(4).setString_(settings.getGamemode());
-                        fileUtil.writeJsonToFile(settings_file, readSettings);
+                        readSettings.get(4).setString_(settings.getGamemode()); // set string of 4th element of read settings ArrayList to chosen option
+                        fileUtil.writeJsonToFile(settings_file, readSettings); // write updated read settings ArrayList to file
                     } else{
-                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(parameter2 + " isn't a valid gamemode. Please choose one of:")); // not on the list of valid gamemodes
-                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText( "\u00A7" + "d" + Arrays.toString(titles.gamemodes)));
+                        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("\u00A7" + "4" + parameter2 + " isn't a valid gamemode.")); // not on the list of valid gamemodes
                     }
                 } else{
-                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("Please input a gamemode you wish to change to"));
+                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("\u00A7" + "4" + "Please input a gamemode you wish to change to"));
                 }
             }
 
@@ -152,6 +173,17 @@ public class stathat extends CommandBase implements ICommand {
     @Override
     public int getRequiredPermissionLevel() {
         return 0;
+    }
+
+    public static String toTitleCase(String givenString) {
+        String[] arr = givenString.split(" ");
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Character.toUpperCase(arr[i].charAt(0)))
+                    .append(arr[i].substring(1)).append(" ");
+        }
+        return sb.toString().trim();
     }
 
 }

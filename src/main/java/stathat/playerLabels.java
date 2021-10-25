@@ -1,5 +1,7 @@
 package stathat;
 
+import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import stathat.dictionaries.titles;
 import stathat.objects.UserSettings;
 import stathat.util.APIUtil;
@@ -25,89 +27,57 @@ import java.util.List;
 
 public class playerLabels
 {
-    private long lastLocrawTime = 0; // the time /locraw was last executed
+    private long lastLocrawTime = 0; // the time /locraw was last
+
     private boolean inDuels = true;
-
-    //private static Map<Entity, String[]> playerLabelList = new HashMap<>();
-    private static Map<Entity, JsonObject> playerLabelList = new HashMap<>();
-
+    private String currentGame = "overall";
     UserSettings settings = generateConfig.settings;
 
+    private Map<Entity, JsonObject> playerLabelList = new HashMap<>(); // all PlayerEntities and their respective JsonObjects
+
+    private ArrayList<Entity> requestQueue = new ArrayList<>(); // the queue of unsent requests to the API
+    private long lastRequestTime = 0;
+
+    private ArrayList<Long> requestsPerMinute = new ArrayList<>(); // arrayList containing time of request. If request is older then a minute removed. Size of arrayList is requests in the last minute.
+
+
 
     @SubscribeEvent
-    public void onChatReceived(ClientChatReceivedEvent event){
-        /*
-        - Method that determines whether player is in a duels lobby/duels game through output of /locraw
-        - If output of locraw has DUELS in it, inDuels can be made true.
+    public void onEntityJoinWorld(EntityJoinWorldEvent event){
+        /* 1)
+        - entity joins world and validated
+        - Entity is added to request queue
          */
 
-        if(Minecraft.getMinecraft().isSingleplayer()){
-             return;
-        }
+        if(Minecraft.getMinecraft().isSingleplayer()){ return; }
 
-        String message = event.message.getUnformattedText();
+        if(!settings.isToggled()){ return; }
 
-        if(Minecraft.getMinecraft().getCurrentServerData().serverIP.contains("hypixel")){ // if the sevrer is hypixel
-            if(message.contains("\"server\"")){
-                if(message.contains("DUELS")){
-                    inDuels = true;
-                } else {
-                    inDuels = false;
-                }
-                event.setCanceled(true);
+        if(!event.entity.isEntityAlive()){ return; }
+
+        if (!(event.entity instanceof EntityPlayer)) { return; }
+
+        if(playerLabelList.containsKey(event.entity)){ return; }
+
+        for(Entity e : playerLabelList.keySet()){
+            if(event.entity.getName().equalsIgnoreCase(e.getName())){
                 return;
             }
-        } else{
-            inDuels = true;
         }
-
-
-    }
-
-    @SubscribeEvent
-    public void onWorldUnload(WorldEvent.Unload e){
-        /* When the world unloads, clear the cache */
-        if(Minecraft.getMinecraft().isSingleplayer()){
-            return;
-        }
-
-        playerLabelList.clear();
-    }
-
-
-    @SubscribeEvent // stage 1
-    public void onEntityJoinWorld(EntityJoinWorldEvent event){
-
-        if(Minecraft.getMinecraft().isSingleplayer()){
-            return;
-        }
-
-        if(!settings.isToggled()){
-            return;
-        }
-
-        if(!event.entity.isEntityAlive()){
-            return;
-        }
-
-        if (!(event.entity instanceof EntityPlayer)) {
-            return;
-        }
-
-        if(playerLabelList.containsKey(event.entity)){
+        if(!(event.entity instanceof EntityPlayer)) {
             return;
         }
 
         /*
         If server IP is hypixel (on entity join world) then send command /locraw
-        - As long as it's been 30 seconds so the command isn't spammed if the player is moving between worlds quickly
+        - As long as it's been 3 seconds so the command isn't spammed if the player is moving between worlds quickly
         */
         if(Minecraft.getMinecraft().getCurrentServerData().serverIP.contains("hypixel")) {
             String eName = event.entity.getName();
             String pName = Minecraft.getMinecraft().thePlayer.getName();
             if (eName.equalsIgnoreCase(pName)) { //if the player is loaded into a new world
                 long timeSinceLastLocraw = System.currentTimeMillis() - lastLocrawTime;
-                if (timeSinceLastLocraw > 3000) { //if the time since last execution of /locraw is longer then 600ms, feel free to do it again
+                if (timeSinceLastLocraw > 3000) { //if the time since last execution of /locraw is longer then 3 seconds, do /locraw again
                     Minecraft.getMinecraft().getNetHandler().addToSendQueue(new C01PacketChatMessage("/locraw"));
 
                     lastLocrawTime = System.currentTimeMillis();
@@ -115,92 +85,101 @@ public class playerLabels
             }
         }
 
-        getPlayerData(event.entity); // run getPlayerData class with entity which just joined the world
+        requestQueue.add(event.entity); // add entity to requestQueue so req can be sent every x time rather then all at once when the player loads
+
+        requestsPerMinute.removeIf(t -> (System.currentTimeMillis() - t) > 60000f); // remove all occurrences of a request being made if it was made over 60 seconds ago
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent tick){
+        /* 2)
+        getPlayerData is called on the request queue:
+        - if it has been longer then 400ms
+        - if there are less then 60 requests that have been made in the last minute
+         */
+
+        long timeSinceLastRequest = System.currentTimeMillis() - lastRequestTime; // time since last request
+
+        if(timeSinceLastRequest < 400){ // send request every 400 ms
+            return;
+        }
+
+        if(requestsPerMinute.size() > 59) { // if less then 60 requests sent in last minute, all good but 'the API has a rate limit of 60 requests/minute'
+            return;
+        }
+
+        if(requestQueue.isEmpty()){
+            return;
+        }
+
+        getPlayerData(requestQueue.get(0)); // gets player data of oldest member of queue
+
+        requestQueue.remove(requestQueue.get(0));
+        lastRequestTime = System.currentTimeMillis();
     }
 
 
-    private void getPlayerData(Entity e) { // stage 2
-        /*
+    private void getPlayerData(Entity e) {
+        /* 3)
         - Runnable which fetches players stats through the hypixel API in a seperate thread
         - Then appends entity and string array containing above head stats to hashmap
         */
+
         new Thread(() -> {
             try {
+                requestsPerMinute.add(System.currentTimeMillis()); // every time request is made, add the time of request to arraylist
+
                 requestUtil requests = new requestUtil();
                 JsonObject playerJson = requests.getJsonObject("https://api.slothpixel.me/api/players/" + e.getName()); // get JsonObject containing all data on player from slothpixel
 
                 JsonObject statsObject = playerJson.getAsJsonObject("stats"); // get more specific stats JsonObject
 
                 playerLabelList.put(e, statsObject); // appending target entity and string array to playerLabelList
-
             } catch (IOException ioException) {
-                ioException.printStackTrace();
+                // Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(ioException.getMessage() + " " + requestsPerMinute.size()));
             }
         }).start();
-    }
 
-    private boolean shouldRender(){ // should render all stathats?
-        if(Minecraft.getMinecraft().isSingleplayer()){
-            return false;
-        }
-
-        if(!settings.isToggled()){
-            return false;
-        }
-
-        if(!inDuels){
-            return false;
-        }
-
-        if(Minecraft.getMinecraft().thePlayer.isPotionActive(Potion.blindness)){
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean omitRender(EntityPlayer e){ // should skip on rendering x players stathat (e.g if they're invisible or shifted)
-        if(!playerLabelList.containsKey(e)){ // if the target isn't contained in the playerLabelList, then omit (return true)
-            return true;
-        }
-
-        if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ // §k is the obfuscation character
-            return true;
-        }
-
-        if(e.isSneaking()){
-            return true;
-        }
-
-        EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
-        if(!settings.isPersonal() && e == thePlayer){
-            return true;
-        }
-
-        if(e.isPotionActive(Potion.invisibility)){
-            return true;
-        }
-
-        return false;
     }
 
 
 
     @SubscribeEvent
-    public void render(RenderWorldLastEvent evt) { //RenderWorldLastEvent RenderPlayerEvent
+    public void render(RenderWorldLastEvent evt) {
 
-        if(!shouldRender()){
-            return;
-        }
+        if(Minecraft.getMinecraft().isSingleplayer()){ return; }
 
+        if(!settings.isToggled()){ return; }
+
+        if(!inDuels){ return; }
+
+        if(Minecraft.getMinecraft().thePlayer.isPotionActive(Potion.blindness)){ return; }
 
         List<EntityPlayer> entityList = Minecraft.getMinecraft().theWorld.playerEntities;
 
         for(EntityPlayer e : entityList) {
 
-            if(omitRender(e)){
+            if(!playerLabelList.containsKey(e)){ // if the target isn't contained in the playerLabelList, then omit (return true)
                 continue;
             }
+
+            if(e.getDisplayName().getUnformattedText().contains("\u00A7" + "k")){ // §k is the obfuscation character
+                continue;
+            }
+
+            if(e.isSneaking()){
+                continue;
+            }
+
+            EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+            if(!settings.isPersonal() && e == thePlayer){
+                continue;
+            }
+
+            if(e.isPotionActive(Potion.invisibility)){
+                continue;
+            }
+
 
             JsonObject statsObject = playerLabelList.get(e);
 
@@ -208,31 +187,35 @@ public class playerLabels
 
             String[] lines = {"", "", ""};
 
+            if(gamemode.equalsIgnoreCase("auto")){
+                gamemode = currentGame; // everything kept in formatted form (e.g Skywars) as key, and when unformatted locraw output needed just use .get(FormattedForm)
+            }
+
             if(gamemode.equalsIgnoreCase("overall")) {
                 float duelsWL = APIUtil.getOverallWinLoss(statsObject);
                 String roundedDuelsWL = round(duelsWL, 2) + " W/L";
 
                 lines = new String[]{
-                        APIUtil.getBestOverallTitle(statsObject),
+                        APIUtil.getOverallTitle(statsObject),
                         roundedDuelsWL,
                         ""
                 };
             }
-            else if(gamemode.equalsIgnoreCase("bridge")){
+            else if(gamemode.equalsIgnoreCase("Bridge")){
                 float bridgeWL = APIUtil.getBridgeWinLoss(statsObject);
                 String roundedBridgeWL = round(bridgeWL, 2) + " W/L";
 
                 lines = new String[]{
-                        APIUtil.getBestBridgeTitle(statsObject),
+                        APIUtil.getBridgeTitle(statsObject),
                         roundedBridgeWL,
                         ""
                 };
-            } else if(gamemode.equalsIgnoreCase("skywars")){
+            } else if(gamemode.equalsIgnoreCase("Skywars")){
                 float skywarsWL = APIUtil.getSkywarsWinLoss(statsObject);
                 String roundedSkywarsWL = round(skywarsWL, 2) + " W/L";
 
                 lines = new String[]{
-                        APIUtil.getBestSkywarsTitle(statsObject),
+                        APIUtil.getSkywarsTitle(statsObject),
                         roundedSkywarsWL,
                         ""
                 };
@@ -241,11 +224,10 @@ public class playerLabels
                 String roundedDuelsWL = round(duelsWL, 2) + " W/L";
 
                 lines = new String[]{
-                        APIUtil.getBestSpecificTitle(statsObject, gamemode),
+                        APIUtil.getSpecificTitle(statsObject, gamemode),
                         roundedDuelsWL,
                         ""
                 };
-
             }
 
             if(lines[0] != ""){
@@ -262,11 +244,57 @@ public class playerLabels
 
     }
 
+    @SubscribeEvent
+    public void onChatReceived(ClientChatReceivedEvent event){
+        /*
+        - Method that determines whether player is in a duels lobby/duels game through output of /locraw
+        - If output of locraw has DUELS in it, inDuels can be made true.
+         */
+
+        if(Minecraft.getMinecraft().isSingleplayer()){
+            return;
+        }
+
+        String message = event.message.getUnformattedText();
+
+        if(Minecraft.getMinecraft().getCurrentServerData().serverIP.contains("hypixel")){ // if the sevrer is hypixel
+            if(message.contains("\"server\"")){
+                if(message.contains("DUELS")){
+                    inDuels = true;
+
+                    for (Map.Entry<String, String> entry : titles.gamemodes.entrySet()) {
+                        String formattedTitle = entry.getKey(); // user input
+                        String unformattedTitle = entry.getValue(); // locraw output
+                        if(message.toLowerCase().contains(unformattedTitle.toLowerCase())){
+                            currentGame = formattedTitle;
+                            break;
+                        }
+                        currentGame = "overall";
+                    }
+
+                } else {
+                    inDuels = false;
+                }
+
+                event.setCanceled(true);
+                return;
+            }
+        } else{
+            inDuels = true;
+        }
+
+    }
+
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload e){
+        /* When the world unloads, clear the cache */
+        playerLabelList.clear();
+        requestQueue.clear();
+    }
+
     private static double round (double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
-
-
 
 }
