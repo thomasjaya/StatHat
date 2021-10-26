@@ -46,6 +46,7 @@ public class APIUtil {
         bridgeWins += (bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("wins").getAsInt();
         bridgeWins += (bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("wins").getAsInt();
         bridgeWins += (bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("wins").getAsInt(); // total bridge wins on all bridge subsets
+        bridgeWins += (bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("wins").getAsInt(); // total bridge wins on all bridge subsets
         bridgeWins += (bridgeWins == 0) ? 1 : 0; // to prevent zero division
 
         int bridgeLosses = 0;
@@ -53,6 +54,7 @@ public class APIUtil {
         bridgeLosses += (bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("losses") == null) ? 0 : bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("losses").getAsInt();
         bridgeLosses += (bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("losses") == null) ? 0 : bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("losses").getAsInt();
         bridgeLosses += (bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("losses") == null) ? 0 : bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("losses").getAsInt(); // total bridge wins on all bridge subsets
+        bridgeLosses += (bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("losses") == null) ? 0 : bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("losses").getAsInt();
         bridgeLosses += (bridgeLosses == 0) ? 1 : 0; // to prevent zero division
 
         float winLoss = (float)bridgeWins/bridgeLosses;
@@ -129,6 +131,8 @@ public class APIUtil {
         bridgeWins += (bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("duels").getAsJsonPrimitive("wins").getAsInt();
         bridgeWins += (bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("2v2v2v2").getAsJsonPrimitive("wins").getAsInt();
         bridgeWins += (bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("3v3v3v3").getAsJsonPrimitive("wins").getAsInt(); // total bridge wins on all bridge subsets
+        bridgeWins += (bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("wins") == null) ? 0 : bridgeJson.getAsJsonObject("fours").getAsJsonPrimitive("wins").getAsInt(); // total bridge wins on all bridge subsets
+
 
         for(int wins : titles.titles.descendingKeySet()){
             if(wins < Math.round(bridgeWins)){
